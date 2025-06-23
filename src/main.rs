@@ -1,3 +1,4 @@
+use daisy_rsx::{Card, CardBody, CardHeader, Fieldset};
 use dioxus::prelude::{
     server_fn::codec::{StreamingText, TextStream},
     *,
@@ -14,6 +15,7 @@ fn main() {
 fn App() -> Element {
     let mut message = use_signal(|| String::new());
     let mut messages = use_signal(|| Vec::<Message>::new());
+    let mut input_messages = use_signal(|| Vec::<Message>::new());
     use_future(move || async move {
         for msg in get_message().await.unwrap().into_iter() {
             if !msg.message_as_ref().trim().is_empty() {
@@ -36,7 +38,7 @@ fn App() -> Element {
                     || accept_message.message_as_ref().trim() != ""
                 {
                     println!("{:#?}", accept_message);
-                    messages.write().push(accept_message);
+                    input_messages.write().push(accept_message);
                 }
             }
         });
@@ -46,52 +48,81 @@ fn App() -> Element {
             rel: "stylesheet",
             href: asset!("assets/tailwind.css"),
         }
+        //TODO: update component
         div {
-            class: " w-[100vw] h-[100vh] flex justify-center items-center ",
-            div {
-                class: "relative flex flex-col justify-between items-center my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-[50%] h-[50%]",
-                div {
-                    class: "mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1 w-full relative h-[15%] flex items-center",
-                    span {
-                        class: "text-md text-slate-600 font-medium ",
-                        "Message"
-                    }
+            class: "bg-white w-[100vw] h-[100vh] flex justify-center items-center ",
+            Card {
+                class: "bg-gray-100 p-3 shadow-md w-[50%] h-[50%] flex flex-col items-center",
+                CardHeader {
+                    class: "text-black antialiased font-light font-[JetBrainsMonoNL Nerd Font Mono] tracking-wider",
+                    title: "Message",
                 }
-                nav {
-                    class: "overflow-auto flex min-w-[240px] flex-col gap-1 p-1.5",
-                    for message in messages.iter() {
-                        div {
-                            class: "text-slate-800 flex w-full items-center rounded-md p-3 transition-all hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-100",
-                            span {
-                                class: "block text-md text-gray-700 leading-relaxed",
-                                {message.message_as_ref()}
+                div {
+                    class: "divider divider-primary",
+                }
+                CardBody {
+                    class: "w-[100%]",
+                    nav {
+                        class: "overflow-auto flex min-w-[240px] flex-col gap-1 p-1.5",
+                        for message in messages.iter() {
+                            div {
+                                class: "chat chat-start",
+                                div {
+                                    class: "chat-bubble ",
+                                    span {
+                                        class: "font-light font-[JetBrainsMonoNL Nerd Font Mono] underline decoration-sky-500 underline-offset-4",
+                                        {message.message_as_ref()}
+                                    }
+                                }
+                            }
+                        }
+                        for message in input_messages.iter() {
+                            div {
+                                class: "chat chat-end",
+                                div {
+                                    class: "chat-bubble",
+                                    {message.message_as_ref()}
+                                }
                             }
                         }
                     }
                 }
                 div {
-                    class: "w-96 flex items-center h-[30%] mb-[10px]",
+                    class: "divider divider-primary",
+                }
+                div {
+                    class: " w-[80%] flex justify-center items-center h-[30%] mb-[10px]",
                     div {
-                        class: "relative w-full min-w-[200px] h-[50%]",
-                        textarea {
-                            placeholder: "",
-                            class: "peer h-full w-full resize-none border-b border-blue-gray-200 bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50",
-                            oninput: move |e| {
-                                message.set(e.value());
-                            },
-                        }
-                        label {
-                            class: "after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal leading-tight text-blue-gray-500 transition-all after:absolute after:-bottom-0 after:block after:w-full after:scale-x-0 after:border-b-2 after:border-gray-900 after:transition-transform after:duration-300 peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.25] peer-placeholder-shown:text-blue-gray-500 peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-gray-900 peer-focus:after:scale-x-100 peer-focus:after:border-gray-900 peer-disabled:text-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500",
-                            "Message"
+                        class: "relative w-full flex justify-center items-center min-w-[200px] h-[50%]",
+                        //TODO: FIX Cardfooter
+                        Fieldset {
+                            legend: "Please input content.",
+                            legend_class: "text-gray-600",
+                            input {
+                                class: "input input-primary text-black shadow-md bg-gray-300 focus:bg-gray-500 focus:text-white",
+                                r#type: "text",
+                                placeholder: "please input content",
+                                oninput: move |e| {
+                                    message.set(e.value());
+                                },
+                                                        //label: "messages",
+                            //label_class: "text-black",
+                            }
+                            p {
+                                class: "label text-gray-300",
+                                "Optional"
+                            }
                         }
                     }
                     button {
-                        class: "ml-[10px] inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-hidden hover:bg-indigo-600 rounded-sm text-lg",
+                        class: "width:fit-content",
                         onclick: move |_| async move {
                             send_message(message()).await.unwrap();
                         },
+                        class: "btn",
                         "Send"
                     }
+
                 }
             }
         }

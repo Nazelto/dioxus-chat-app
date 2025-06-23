@@ -533,6 +533,7 @@ name = "chat-app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "daisy_rsx",
  "dioxus",
  "futures",
  "gset",
@@ -896,6 +897,16 @@ checksum = "13b588ba4ac1a99f7f2964d24b3d896ddc6bf847ee3855dbd4366f058cfcd331"
 dependencies = [
  "quote",
  "syn 2.0.103",
+]
+
+[[package]]
+name = "daisy_rsx"
+version = "0.1.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8611ede70f4f38e5698facacb5644183420ea2376607a3163b1cdaf470c93ab"
+dependencies = [
+ "dioxus",
+ "dioxus-ssr",
 ]
 
 [[package]]
